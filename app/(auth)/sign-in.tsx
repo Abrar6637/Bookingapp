@@ -1,9 +1,10 @@
-import { useSignIn } from '@clerk/expo'
+import { useSignIn, useUser } from '@clerk/expo'
 import { Ionicons } from '@expo/vector-icons'
 import { Link, useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import {
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,8 +15,6 @@ import {
 } from 'react-native'
 
 type Step = 'signIn' | 'clientTrust' | 'forgotEmail' | 'forgotReset'
-
-// ---------- Components defined OUTSIDE SignIn (keyboard fix) ----------
 
 function PasswordInput({
   value,
@@ -31,17 +30,17 @@ function PasswordInput({
   onToggle: () => void
 }) {
   return (
-    <View className="w-full flex-row items-center border border-gray-300 rounded-lg mb-4 px-2">
+    <View className="w-full flex-row items-center border border-gray-700 bg-white/80 rounded-lg mb-4 px-2">
       <TextInput
         value={value}
         placeholder={placeholder}
         secureTextEntry={!show}
         autoCapitalize="none"
         onChangeText={onChange}
-        className="flex-1 p-3"
+        className="flex-1 p-3 text-gray-900"
       />
-      <TouchableOpacity onPress={onToggle}>
-        <Ionicons name={show ? 'eye-off' : 'eye'} size={22} color="#666" />
+      <TouchableOpacity activeOpacity={0.7} onPress={onToggle}>
+        <Ionicons name={show ? 'eye-off' : 'eye'} size={22} color="#444" />
       </TouchableOpacity>
     </View>
   )
@@ -51,7 +50,8 @@ function Screen({ children }: { children: React.ReactNode }) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-white"
+      style={{ backgroundColor: '#4863A0' }}
+      className="flex-1"
     >
       <ScrollView
         keyboardShouldPersistTaps="handled"
@@ -69,10 +69,9 @@ function Screen({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ---------- Main screen ----------
-
 export default function SignIn() {
   const { signIn } = useSignIn()
+  const { user } = useUser()
   const router = useRouter()
 
   const [step, setStep] = useState<Step>('signIn')
@@ -86,19 +85,44 @@ export default function SignIn() {
   const showError = (error: any) =>
     Alert.alert('Error', error?.longMessage ?? error?.message ?? 'Something went wrong')
 
-  const finish = async () => {
-    await signIn.finalize({
-      navigate: ({ session }) => {
-        if (session?.currentTask) {
-          console.log('Pending task:', session.currentTask)
-          return
-        }
-        router.replace('/(root)/tabs')
-      },
-    })
+  // Role check karke sahi jagah redirect karta hai
+  const redirectByRole = async () => {
+    await user?.reload()
+    const role = user?.unsafeMetadata?.role as string | undefined
+
+    console.log('Role fetched after reload:', role)
+
+    if (!role) {
+      router.replace('/(onboarding)/role-selection')
+    } else if (role === 'technician') {
+      router.replace('/(technician)/(tabs)')
+    } else {
+      router.replace('/(customer)/(tabs)')
+    }
   }
 
-  // ---------- Normal sign in ----------
+ const finish = async () => {
+  await signIn.finalize({
+    navigate: async ({ session }) => {
+      if (session?.currentTask) {
+        console.log('Pending task:', session.currentTask)
+        return
+      }
+
+      const role = session?.user?.unsafeMetadata?.role as string | undefined
+      console.log('Role from session.user:', role)
+
+      if (!role) {
+        router.replace('/(onboarding)/role-selection')
+      } else if (role === 'technician') {
+        router.replace('/(technician)/(tabs)')
+      } else {
+        router.replace('/(customer)/(tabs)')
+      }
+    },
+  })
+}
+
   const onSignInPress = async () => {
     if (!signIn) return
     setLoading(true)
@@ -111,7 +135,6 @@ export default function SignIn() {
       if (signIn.status === 'complete') {
         await finish()
       } else if (signIn.status === 'needs_client_trust') {
-        // New device: Clerk asks for an email code
         await signIn.mfa.sendEmailCode()
         setCode('')
         setStep('clientTrust')
@@ -138,7 +161,6 @@ export default function SignIn() {
     }
   }
 
-  // ---------- Forgot password ----------
   const onSendResetCode = async () => {
     if (!signIn) return
     if (!emailAddress.trim()) {
@@ -187,24 +209,27 @@ export default function SignIn() {
     }
   }
 
-  // ---------- Screens ----------
-
-  // Client trust: email code on a new device
   if (step === 'clientTrust') {
     return (
       <Screen>
-        <Text className="text-2xl font-bold mb-4">Verify Email</Text>
-        <Text className="text-gray-500 mb-6 text-center">We sent a code to {emailAddress}</Text>
+        <Image
+          source={require('../../assets/images/bookingap.png')}
+          className="w-100 h-32 mb-4"
+          resizeMode="contain"
+        />
+        <Text className="text-2xl font-bold mb-4 text-gray-900">Verify Email</Text>
+        <Text className="text-gray-800 mb-6 text-center">We sent a code to {emailAddress}</Text>
 
-        <Text className="w-full text-sm font-semibold text-gray-700 mb-1">OTP Code</Text>
+        <Text className="w-full text-sm font-semibold text-gray-900 mb-1">OTP Code</Text>
         <TextInput
           value={code}
           placeholder="Enter 6-digit code"
           keyboardType="number-pad"
           onChangeText={setCode}
-          className="w-full border border-gray-300 rounded-lg p-3 mb-6 text-center text-lg"
+          className="w-full border border-gray-700 bg-white/80 rounded-lg p-3 mb-6 text-center text-lg text-gray-900"
         />
         <TouchableOpacity
+          activeOpacity={0.7}
           onPress={onClientTrustVerify}
           disabled={loading}
           className="w-full bg-black rounded-lg p-4 items-center"
@@ -215,26 +240,31 @@ export default function SignIn() {
     )
   }
 
-  // Forgot password - step 1: email
   if (step === 'forgotEmail') {
     return (
       <Screen>
-        <Text className="text-2xl font-bold mb-2">Forgot Password</Text>
-        <Text className="text-gray-500 mb-6 text-center">
+        <Image
+          source={require('../../assets/images/bookingap.png')}
+          className="w-32 h-32 mb-4"
+          resizeMode="contain"
+        />
+        <Text className="text-2xl font-bold mb-2 text-gray-900">Forgot Password</Text>
+        <Text className="text-gray-800 mb-6 text-center">
           Enter your email and we'll send you a reset code.
         </Text>
 
-        <Text className="w-full text-sm font-semibold text-gray-700 mb-1">Email Address</Text>
+        <Text className="w-full text-sm font-semibold text-gray-900 mb-1">Email Address</Text>
         <TextInput
           autoCapitalize="none"
           keyboardType="email-address"
           value={emailAddress}
           placeholder="Enter email"
           onChangeText={setEmailAddress}
-          className="w-full border border-gray-300 rounded-lg p-3 mb-6"
+          className="w-full border border-gray-700 bg-white/80 rounded-lg p-3 mb-6 text-gray-900"
         />
 
         <TouchableOpacity
+          activeOpacity={0.7}
           onPress={onSendResetCode}
           disabled={loading}
           className="w-full bg-black rounded-lg p-4 items-center mb-4"
@@ -242,30 +272,34 @@ export default function SignIn() {
           <Text className="text-white font-bold">{loading ? 'Sending...' : 'Send Code'}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setStep('signIn')}>
-          <Text className="text-blue-600 font-bold">Back to Sign In</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => setStep('signIn')}>
+          <Text className="text-black font-bold underline">Back to Sign In</Text>
         </TouchableOpacity>
       </Screen>
     )
   }
 
-  // Forgot password - step 2: code + new password
   if (step === 'forgotReset') {
     return (
       <Screen>
-        <Text className="text-2xl font-bold mb-2">Reset Password</Text>
-        <Text className="text-gray-500 mb-6 text-center">We sent a code to {emailAddress}</Text>
+        <Image
+          source={require('../../assets/images/bookingap.png')}
+          className="w-32 h-32 mb-4"
+          resizeMode="contain"
+        />
+        <Text className="text-2xl font-bold mb-2 text-gray-900">Reset Password</Text>
+        <Text className="text-gray-800 mb-6 text-center">We sent a code to {emailAddress}</Text>
 
-        <Text className="w-full text-sm font-semibold text-gray-700 mb-1">OTP Code</Text>
+        <Text className="w-full text-sm font-semibold text-gray-900 mb-1">OTP Code</Text>
         <TextInput
           value={code}
           placeholder="Enter 6-digit code"
           keyboardType="number-pad"
           onChangeText={setCode}
-          className="w-full border border-gray-300 rounded-lg p-3 mb-4 text-center text-lg"
+          className="w-full border border-gray-700 bg-white/80 rounded-lg p-3 mb-4 text-center text-lg text-gray-900"
         />
 
-        <Text className="w-full text-sm font-semibold text-gray-700 mb-1">New Password</Text>
+        <Text className="w-full text-sm font-semibold text-gray-900 mb-1">New Password</Text>
         <PasswordInput
           value={newPassword}
           onChange={setNewPassword}
@@ -275,6 +309,7 @@ export default function SignIn() {
         />
 
         <TouchableOpacity
+          activeOpacity={0.7}
           onPress={onResetPassword}
           disabled={loading}
           className="w-full bg-black rounded-lg p-4 items-center mb-4"
@@ -284,29 +319,34 @@ export default function SignIn() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setStep('signIn')}>
-          <Text className="text-blue-600 font-bold">Back to Sign In</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => setStep('signIn')}>
+          <Text className="text-black font-bold underline">Back to Sign In</Text>
         </TouchableOpacity>
       </Screen>
     )
   }
 
-  // Main sign-in form
   return (
     <Screen>
-      <Text className="text-2xl font-bold mb-8">Sign In</Text>
+      <Image
+        source={require('../../assets/images/bookingap.png')}
+        className="w-36 h-36 mb-4"
+        resizeMode="contain"
+      />
 
-      <Text className="w-full text-sm font-semibold text-gray-700 mb-1">Email Address</Text>
+      <Text className="text-2xl font-bold mb-6 text-gray-900">Sign In</Text>
+
+      <Text className="w-full text-sm font-semibold text-gray-900 mb-1">Email Address</Text>
       <TextInput
         autoCapitalize="none"
         keyboardType="email-address"
         value={emailAddress}
         placeholder="Enter email"
         onChangeText={setEmailAddress}
-        className="w-full border border-gray-300 rounded-lg p-3 mb-4"
+        className="w-full border border-gray-700 bg-white/80 rounded-lg p-3 mb-4 text-gray-900"
       />
 
-      <Text className="w-full text-sm font-semibold text-gray-700 mb-1">Password</Text>
+      <Text className="w-full text-sm font-semibold text-gray-900 mb-1">Password</Text>
       <PasswordInput
         value={password}
         onChange={setPassword}
@@ -315,11 +355,12 @@ export default function SignIn() {
         onToggle={() => setShowPassword(!showPassword)}
       />
 
-      <TouchableOpacity className="self-end mb-6" onPress={() => setStep('forgotEmail')}>
-        <Text className="text-blue-600 font-semibold">Forgot password?</Text>
+      <TouchableOpacity activeOpacity={0.7} className="self-end mb-6" onPress={() => setStep('forgotEmail')}>
+        <Text className="text-black font-semibold underline">Forgot password?</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
+        activeOpacity={0.7}
         onPress={onSignInPress}
         disabled={loading}
         className="w-full bg-black rounded-lg p-4 items-center mb-4"
@@ -328,9 +369,9 @@ export default function SignIn() {
       </TouchableOpacity>
 
       <View className="flex-row">
-        <Text>Don't have an account? </Text>
+        <Text className="text-gray-900">Don't have an account? </Text>
         <Link href="/sign-up">
-          <Text className="text-blue-600 font-bold">Sign Up</Text>
+          <Text className="text-black font-bold underline">Sign Up</Text>
         </Link>
       </View>
     </Screen>

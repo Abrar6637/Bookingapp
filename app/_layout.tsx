@@ -7,9 +7,7 @@ const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
 
 console.log('CLERK KEY LOADED:', publishableKey)
 
-if (!publishableKey) {
-  throw new Error('Add your Clerk Publishable Key to the .env file')
-}
+
 if (!publishableKey) {
   throw new Error('Add your Clerk Publishable Key to the .env file')
 }

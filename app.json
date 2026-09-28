@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "MyDemo",
-    "slug": "MyDemo",
+    "name": "BookingApp",
+    "slug": "BookingApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "mydemo",
+    "icon": "./assets/images/bookingap.png",
+    "scheme": "bookingapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.BookingApp"
     },
     "web": {
       "output": "static",
@@ -49,6 +50,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6597d777-d647-44ac-9276-8492d74164e7"
+      }
     }
   }
 }
