@@ -8,7 +8,7 @@ import BookingCard from '../../../components/BookingCard'
 import ErrorState from '../../../components/ErrorState'
 import { bookingService } from '../../../services/bookingService'
 import { Booking } from '../../../types/booking'
-
+import LoadingState from '../../../components/LoadingState'
 const TABS = ['Ongoing', 'Completed']
 
 export default function TechnicianJobs() {
@@ -65,14 +65,12 @@ export default function TechnicianJobs() {
             key={tab}
             onPress={() => setActiveTab(tab)}
             style={{ paddingBottom: 12 }}
-            className={`flex-1 items-center border-b-2 ${
-              activeTab === tab ? 'border-black' : 'border-transparent'
-            }`}
+            className={`flex-1 items-center border-b-2 ${activeTab === tab ? 'border-black' : 'border-transparent'
+              }`}
           >
             <Text
-              className={`text-sm font-semibold ${
-                activeTab === tab ? 'text-black' : 'text-gray-400'
-              }`}
+              className={`text-sm font-semibold ${activeTab === tab ? 'text-black' : 'text-gray-400'
+                }`}
             >
               {tab}
             </Text>
@@ -86,7 +84,7 @@ export default function TechnicianJobs() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {loading ? (
-          <Text className="text-center text-gray-400 mt-8">Loading jobs...</Text>
+          <LoadingState message="Loading jobs..." />
         ) : error ? (
           <ErrorState message={error} onRetry={onRetry} />
         ) : filteredJobs.length === 0 ? (

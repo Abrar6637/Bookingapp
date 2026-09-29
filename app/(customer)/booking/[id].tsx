@@ -5,6 +5,8 @@ import { useCallback, useState } from 'react'
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { apiFetch } from '../../../services/api'
+import LoadingState from '../../../components/LoadingState'
+import { ActivityIndicator } from 'react-native'
 
 const STEPS = ['Pending', 'Ongoing', 'Completed']
 
@@ -57,13 +59,13 @@ export default function BookingDetail() {
     ])
   }
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <Text className="text-gray-400">Loading...</Text>
-      </SafeAreaView>
-    )
-  }
+if (loading) {
+  return (
+    <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <ActivityIndicator size="large" color="#000" />
+    </SafeAreaView>
+  )
+}
 
   if (!booking) {
     return (

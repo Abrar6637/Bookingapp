@@ -8,6 +8,7 @@ import ErrorState from '../../../components/ErrorState'
 import TechnicianCard from '../../../components/TechnicianCard'
 import { technicianService } from '../../../services/technicianService'
 import { Technician } from '../../../types/technician'
+import LoadingState from '../../../components/LoadingState'
 
 const FILTERS = ['All', 'Available Now', 'Top Rated', 'Nearest', 'Cheapest']
 
@@ -134,7 +135,7 @@ export default function Technicians() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {loading ? (
-          <Text className="text-center text-gray-400 mt-8">Loading technicians...</Text>
+          <LoadingState message="Loading technicians..." />
         ) : error ? (
           <ErrorState message={error} onRetry={onRetry} />
         ) : filteredTechnicians.length === 0 ? (

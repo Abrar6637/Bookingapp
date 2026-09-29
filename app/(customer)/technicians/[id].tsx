@@ -7,6 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import ErrorState from '../../../components/ErrorState'
 import { technicianService } from '../../../services/technicianService'
 import { Technician, TechnicianReview } from '../../../types/technician'
+import LoadingState from '../../../components/LoadingState'
+import { ActivityIndicator } from 'react-native'
 
 export default function TechnicianProfile() {
   const { id } = useLocalSearchParams()
@@ -36,13 +38,13 @@ export default function TechnicianProfile() {
     }
   }
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <Text className="text-gray-400">Loading...</Text>
-      </SafeAreaView>
-    )
-  }
+ if (loading) {
+  return (
+    <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <ActivityIndicator size="large" color="#000" />
+    </SafeAreaView>
+  )
+}
 
   if (error || !technician) {
     return (

@@ -2,9 +2,10 @@ import { useAuth } from '@clerk/expo'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import ErrorState from '../../../components/ErrorState'
+import LoadingState from '../../../components/LoadingState'
 import { technicianService } from '../../../services/technicianService'
 
 export default function TechnicianEarnings() {
@@ -48,7 +49,7 @@ export default function TechnicianEarnings() {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <Text className="text-gray-400">Loading earnings...</Text>
+        <LoadingState message="Loading earnings..." />
       </SafeAreaView>
     )
   }
@@ -114,12 +115,18 @@ export default function TechnicianEarnings() {
         </View>
 
         {/* Withdraw Button */}
-        <View className="px-6 mt-6">
-          <TouchableOpacity className="w-full bg-gray-100 rounded-xl p-4 flex-row items-center justify-center">
-            <Ionicons name="wallet-outline" size={20} color="black" />
-            <Text className="text-black font-bold text-base ml-2">Withdraw Funds</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={() =>
+            Alert.alert(
+              'Coming Soon',
+              'Withdraw feature abhi zeer-e-tameer hai. Jald hi JazzCash/EasyPaisa se withdraw kar sakenge.'
+            )
+          }
+          className="w-full bg-gray-100 rounded-xl p-4 flex-row items-center justify-center"
+        >
+          <Ionicons name="wallet-outline" size={20} color="black" />
+          <Text className="text-black font-bold text-base ml-2">Withdraw Funds</Text>
+        </TouchableOpacity>
 
         {/* Transaction History */}
         <View className="px-6 mt-8 mb-8">
@@ -127,7 +134,7 @@ export default function TechnicianEarnings() {
 
           {data.transactions.length === 0 ? (
             <Text className="text-sm text-gray-400 text-center py-8">
-              Abhi tak koi completed transaction nahi hai
+              Not any transactions yet. Once you complete jobs, your earnings will appear here
             </Text>
           ) : (
             data.transactions.map((tx: any) => (

@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAuth } from '@clerk/expo'
 import { apiFetch } from '../../../services/api'
+import LoadingState from '../../../components/LoadingState'
+import { ActivityIndicator } from 'react-native'
 
 export default function TechnicianBookingDetail() {
   const { id } = useLocalSearchParams()
@@ -56,13 +58,13 @@ export default function TechnicianBookingDetail() {
     ])
   }
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <Text className="text-gray-400">Loading...</Text>
-      </SafeAreaView>
-    )
-  }
+if (loading) {
+  return (
+    <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <ActivityIndicator size="large" color="#000" />
+    </SafeAreaView>
+  )
+}
 
   if (!job) {
     return (

@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react'
 import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import ErrorState from '../../../components/ErrorState'
+import LoadingState from '../../../components/LoadingState'
 import { bookingService } from '../../../services/bookingService'
 import { technicianService } from '../../../services/technicianService'
 import { Booking } from '../../../types/booking'
@@ -57,12 +58,12 @@ export default function TechnicianRequests() {
       setAvailabilityOn(newValue)
     } catch (err: any) {
       console.log('Error updating availability:', err.message)
-      Alert.alert('Error', err.message || 'Availability update nahi ho saki')
+      Alert.alert('Error', err.message || 'Availability not updated')
     }
   }
 
   const onAccept = (id: number) => {
-    Alert.alert('Accept Request', 'Kya ap is booking ko accept karna chahte hain?', [
+    Alert.alert('Accept Request', 'Are you sure you want to accept this request?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Accept',
@@ -72,7 +73,7 @@ export default function TechnicianRequests() {
             await bookingService.accept(token, id)
             setRequests((prev) => prev.filter((r) => r.id !== id))
           } catch (err: any) {
-            Alert.alert('Error', err.message || 'Kuch masla hua')
+            Alert.alert('Error', err.message || 'Something went wrong')
           }
         },
       },
@@ -80,7 +81,7 @@ export default function TechnicianRequests() {
   }
 
   const onReject = (id: number) => {
-    Alert.alert('Reject Request', 'Kya ap is booking ko reject karna chahte hain?', [
+    Alert.alert('Reject Request', 'Are you sure you want to reject this request?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Reject',
@@ -91,7 +92,7 @@ export default function TechnicianRequests() {
             await bookingService.reject(token, id)
             setRequests((prev) => prev.filter((r) => r.id !== id))
           } catch (err: any) {
-            Alert.alert('Error', err.message || 'Kuch masla hua')
+            Alert.alert('Error', err.message || 'Something went wrong')
           }
         },
       },
@@ -137,20 +138,20 @@ export default function TechnicianRequests() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {loading ? (
-          <Text className="text-center text-gray-400 mt-8">Loading requests...</Text>
+          <LoadingState message="Loading request..." />
         ) : error ? (
           <ErrorState message={error} onRetry={onRetry} />
         ) : !availabilityOn ? (
           <View className="items-center justify-center py-20">
             <Ionicons name="moon-outline" size={40} color="#d1d5db" />
             <Text className="text-gray-400 text-sm mt-3 text-center">
-              Ap offline hain. Requests dekhne ke liye "Available" karein.
+              You are offline. Please set your availability to "Available" to view requests.
             </Text>
           </View>
         ) : requests.length === 0 ? (
           <View className="items-center justify-center py-20">
             <Ionicons name="checkmark-done-circle-outline" size={40} color="#d1d5db" />
-            <Text className="text-gray-400 text-sm mt-3">Koi naya request nahi hai</Text>
+            <Text className="text-gray-400 text-sm mt-3">No new request</Text>
           </View>
         ) : (
           requests.map((req) => (

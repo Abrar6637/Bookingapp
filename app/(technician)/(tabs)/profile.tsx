@@ -1,8 +1,10 @@
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native'
-import { useUser, useAuth } from '@clerk/expo'
-import { useRouter } from 'expo-router'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useAuth, useUser } from '@clerk/expo'
 import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { authService } from '../../../services/authService'
 
 const MENU_ITEMS = [
   { id: '1', label: 'Edit Services & Pricing', icon: 'construct-outline', route: '/(technician)/setup' },
@@ -17,9 +19,26 @@ export default function TechnicianProfile() {
   const { user } = useUser()
   const { signOut } = useAuth()
   const router = useRouter()
+  const { getToken } = useAuth()
+
+  const [stats, setStats] = useState({ total_bookings: 0, completed_jobs: 0, rating: 0, total_earned: 0 })
+
+  useEffect(() => {
+    loadStats()
+  }, [])
+
+  const loadStats = async () => {
+    try {
+      const token = await getToken()
+      const data = await authService.getStats(token)
+      setStats(data)
+    } catch (err: any) {
+      console.log('Error loading stats:', err.message)
+    }
+  }
 
   const onSignOutPress = () => {
-    Alert.alert('Sign Out', 'Kya ap sign out karna chahte hain?', [
+    Alert.alert('Sign Out', 'You want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign Out',
@@ -75,16 +94,16 @@ export default function TechnicianProfile() {
           <View className="flex-1 items-center bg-gray-50 rounded-xl py-4 mr-2">
             <View className="flex-row items-center">
               <Ionicons name="star" size={16} color="#facc15" />
-              <Text className="text-lg font-bold text-gray-900 ml-1">4.8</Text>
+              <Text className="text-lg font-bold text-gray-900 ml-1">{stats.rating || 0}</Text>
             </View>
             <Text className="text-xs text-gray-500 mt-1">Rating</Text>
           </View>
           <View className="flex-1 items-center bg-gray-50 rounded-xl py-4 mx-1">
-            <Text className="text-lg font-bold text-gray-900">87</Text>
+            <Text className="text-lg font-bold text-gray-900">{stats.completed_jobs}</Text>
             <Text className="text-xs text-gray-500 mt-1">Jobs Done</Text>
           </View>
           <View className="flex-1 items-center bg-gray-50 rounded-xl py-4 ml-2">
-            <Text className="text-lg font-bold text-gray-900">Rs. 45.5K</Text>
+            <Text className="text-lg font-bold text-gray-900">Rs. {stats.total_earned.toLocaleString()}</Text>
             <Text className="text-xs text-gray-500 mt-1">Total Earned</Text>
           </View>
         </View>

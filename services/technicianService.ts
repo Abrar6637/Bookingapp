@@ -7,6 +7,8 @@ export const technicianService = {
 
   getById: (token: string | null, id: string | number): Promise<Technician> =>
     apiFetch(`/technicians/${id}`, { token }),
+  getTopRated: (token: string | null): Promise<Technician[]> =>
+  apiFetch('/technicians/top-rated', { token }),
 
   saveProfile: (
     token: string | null,

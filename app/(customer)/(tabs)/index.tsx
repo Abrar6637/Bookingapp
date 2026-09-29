@@ -5,10 +5,15 @@ import { useEffect, useState } from 'react'
 import { RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import ErrorState from '../../../components/ErrorState'
+import LoadingState from '../../../components/LoadingState'
+import TechnicianCard from '../../../components/TechnicianCard'
 import { SERVICE_COLORS } from '../../../constants'
+import { bookingService } from '../../../services/bookingService'
 import { serviceService } from '../../../services/serviceService'
+import { technicianService } from '../../../services/technicianService'
 import { useLocationStore } from '../../../store/locationStore'
 import { ServiceCategory } from '../../../types/service'
+import { Technician } from '../../../types/technician'
 
 export default function Home() {
   const router = useRouter()
@@ -20,10 +25,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [topTechnicians, setTopTechnicians] = useState<Technician[]>([])
+  const [hasUpdates, setHasUpdates] = useState(false)
 
-  useEffect(() => {
-    loadServices()
-  }, [])
+useEffect(() => {
+  loadServices()
+  loadTopTechnicians()
+  checkForUpdates()
+}, [])
 
   const loadServices = async () => {
     try {
@@ -39,9 +48,35 @@ export default function Home() {
     }
   }
 
+// useEffect(() => {
+//   loadServices()
+//   loadTopTechnicians()
+//   checkForUpdates()
+// }, [])
+
+  const loadTopTechnicians = async () => {
+    try {
+      const token = await getToken()
+      const data = await technicianService.getTopRated(token)
+      setTopTechnicians(data)
+    } catch (err: any) {
+      console.log('Error loading top technicians:', err.message)
+    }
+  }
+
+  const checkForUpdates = async () => {
+  try {
+    const token = await getToken()
+    const data = await bookingService.getAll(token)
+    setHasUpdates(data.some((b) => b.status === 'Ongoing' || b.status === 'Completed'))
+  } catch {
+    // chup chap skip, ye sirf ek badge hai
+  }
+}
+
   const onRefresh = async () => {
     setRefreshing(true)
-    await loadServices()
+    await Promise.all([loadServices(), loadTopTechnicians()])
     setRefreshing(false)
   }
 
@@ -72,9 +107,15 @@ export default function Home() {
               <Ionicons name="chevron-down" size={16} color="black" />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity className="w-11 h-11 rounded-full bg-gray-100 items-center justify-center">
-            <Ionicons name="notifications-outline" size={22} color="black" />
-          </TouchableOpacity>
+          <TouchableOpacity
+  onPress={() => router.push('/(customer)/(tabs)/bookings')}
+  className="w-11 h-11 rounded-full bg-gray-100 items-center justify-center"
+>
+  <Ionicons name="notifications-outline" size={22} color="black" />
+  {hasUpdates && (
+    <View className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-red-500 border border-white" />
+  )}
+</TouchableOpacity>
         </View>
 
         <View className="px-6 mt-4">
@@ -101,9 +142,12 @@ export default function Home() {
             <Text className="text-gray-300 text-sm mt-1 mb-3">
               Book a verified technician within 30 minutes
             </Text>
-            <TouchableOpacity className="bg-white rounded-lg py-2 px-4 self-start">
-              <Text className="text-black font-bold text-sm">Book Now</Text>
-            </TouchableOpacity>
+            <TouchableOpacity
+  onPress={() => router.push('/(customer)/technicians?service=Electrician')}
+  className="bg-white rounded-lg py-2 px-4 self-start"
+>
+  <Text className="text-black font-bold text-sm">Book Now</Text>
+</TouchableOpacity>
           </View>
         )}
 
@@ -116,7 +160,7 @@ export default function Home() {
         )}
 
         {loading ? (
-          <Text className="text-center text-gray-400 mt-4">Loading services...</Text>
+          <LoadingState message="Loading services..." />
         ) : error ? (
           <ErrorState message={error} onRetry={onRetry} />
         ) : filteredServices.length === 0 ? (
@@ -156,12 +200,20 @@ export default function Home() {
         {!search && !error && (
           <View className="px-6 mt-4 mb-8">
             <Text className="text-xl font-bold text-gray-900 mb-4">Top Rated Technicians</Text>
-            <View className="bg-gray-50 rounded-2xl p-5 items-center justify-center py-10">
-              <Ionicons name="star-outline" size={32} color="#9ca3af" />
-              <Text className="text-gray-400 text-sm mt-2">
-                Technicians list yahan aayegi (Laravel API se)
-              </Text>
-            </View>
+            {topTechnicians.length === 0 ? (
+              <View className="bg-gray-50 rounded-2xl p-5 items-center justify-center py-10">
+                <Ionicons name="star-outline" size={32} color="#9ca3af" />
+                <Text className="text-gray-400 text-sm mt-2">No top-rated technicians available</Text>
+              </View>
+            ) : (
+              topTechnicians.map((tech) => (
+                <TechnicianCard
+                  key={tech.id}
+                  technician={tech}
+                  onPress={() => router.push(`/(customer)/technicians/${tech.id}`)}
+                />
+              ))
+            )}
           </View>
         )}
       </ScrollView>
