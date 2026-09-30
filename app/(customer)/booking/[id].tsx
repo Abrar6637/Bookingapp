@@ -41,7 +41,7 @@ export default function BookingDetail() {
     : 0
 
   const onCancelBooking = () => {
-    Alert.alert('Cancel Booking', 'Kya ap ye booking cancel karna chahte hain?', [
+    Alert.alert('Cancel Booking', 'Are you sure you want to cancel this booking?', [
       { text: 'No', style: 'cancel' },
       {
         text: 'Yes, Cancel',

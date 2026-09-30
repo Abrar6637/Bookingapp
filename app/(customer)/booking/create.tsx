@@ -1,22 +1,36 @@
-import { useState } from 'react'
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useAuth } from '@clerk/expo'
 import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useAuth } from '@clerk/expo'
-import { apiFetch } from '../../../services/api'
-import { useLocationStore } from '../../../store/locationStore'
+import { useState } from 'react'
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { bookingService } from '../../../services/bookingService'
+import { useLocationStore } from '../../../store/locationStore'
 
 const TIME_SLOTS = ['09:00 AM', '11:00 AM', '01:00 PM', '03:00 PM', '05:00 PM', '07:00 PM']
 
-const DATES = [
-  { label: 'Today', date: '22 Sep', value: new Date().toISOString().split('T')[0] },
-  { label: 'Tomorrow', date: '23 Sep', value: new Date(Date.now() + 86400000).toISOString().split('T')[0] },
-  { label: 'Wed', date: '24 Sep', value: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0] },
-  { label: 'Thu', date: '25 Sep', value: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0] },
-  { label: 'Fri', date: '26 Sep', value: new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0] },
-]
+const DATES = Array.from({ length: 7 }, (_, index) => {
+  const date = new Date()
+  date.setDate(date.getDate() + index)
+
+  return {
+    label:
+      index === 0
+        ? 'Today'
+        : index === 1
+          ? 'Tomorrow'
+          : date.toLocaleDateString('en-US', { weekday: 'short' }),
+
+    date: date.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+    }),
+
+    value: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+      date.getDate()
+    ).padStart(2, '0')}`,
+  }
+})
 
 export default function Booking() {
   const { technicianId, serviceCategoryId } = useLocalSearchParams()

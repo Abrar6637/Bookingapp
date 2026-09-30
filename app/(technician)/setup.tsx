@@ -33,11 +33,11 @@ export default function TechnicianSetup() {
 
   const onSubmit = async () => {
     if (selectedServices.length === 0) {
-      Alert.alert('Error', 'Kam az kam ek service select karein')
+      Alert.alert('Error', 'Select at least one service')
       return
     }
     if (!price.trim()) {
-      Alert.alert('Error', 'Apna price/rate enter karein')
+      Alert.alert('Error', 'Enter you price')
       return
     }
 
@@ -58,7 +58,7 @@ export default function TechnicianSetup() {
       router.replace('/(technician)/(tabs)')
     } catch (err: any) {
       console.log('Error saving profile:', err.message)
-      Alert.alert('Error', err.message || 'Kuch masla hua, dobara try karein')
+      Alert.alert('Error', err.message || 'something wrong, Try again')
     } finally {
       setLoading(false)
     }
@@ -71,7 +71,7 @@ export default function TechnicianSetup() {
         <View className="px-6 pt-6 pb-2">
           <Text className="text-2xl font-bold text-gray-900">Setup Your Profile</Text>
           <Text className="text-sm text-gray-500 mt-1">
-            Apni services aur rate set karein taake customers ap ko dhoond saken
+          Set up your profile to start receiving bookings.
           </Text>
         </View>
 
@@ -142,7 +142,7 @@ export default function TechnicianSetup() {
           <TextInput
             value={bio}
             onChangeText={setBio}
-            placeholder="Apne kaam ke baare mein bataen..."
+            placeholder="Tell us about your work..."
             placeholderTextColor="#9ca3af"
             multiline
             numberOfLines={4}

@@ -18,7 +18,7 @@ export default function BookingConfirmation() {
           Booking Request Sent!
         </Text>
         <Text className="text-base text-gray-500 text-center leading-6 mb-8">
-          Apki booking request technician ko bhej di gayi hai. Jaise hi wo accept karega, ap ko notification mil jayegi.
+         Your booking request has been sent to the technician. You will be notified once they accept or reject your request.
         </Text>
 
         {/* Booking Summary Card */}

@@ -36,12 +36,12 @@ export default function TechnicianBookingDetail() {
     if (job?.customer_phone) {
       Linking.openURL(`tel:${job.customer_phone}`)
     } else {
-      Alert.alert('Info', 'Customer ka phone number available nahi hai')
+      Alert.alert('Info', 'Not able to call customer. Phone number not available.')
     }
   }
 
   const onMarkCompleted = () => {
-    Alert.alert('Mark as Completed', 'Kya ye job complete ho chuki hai?', [
+    Alert.alert('Mark as Completed', 'Are you sure you want to mark this job as completed?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Yes, Complete',
@@ -51,7 +51,7 @@ export default function TechnicianBookingDetail() {
             await apiFetch(`/bookings/${id}/complete`, { method: 'PUT', token })
             router.back()
           } catch (err: any) {
-            Alert.alert('Error', err.message || 'Kuch masla hua')
+            Alert.alert('Error', err.message || 'something went wrong, please try again.')
           }
         },
       },

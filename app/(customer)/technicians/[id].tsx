@@ -167,7 +167,7 @@ export default function TechnicianProfile() {
               </View>
             ))
           ) : (
-            <Text className="text-sm text-gray-400">Abhi tak koi review nahi hai</Text>
+            <Text className="text-sm text-gray-400">Still no reviews available.</Text>
           )}
         </View>
       </ScrollView>

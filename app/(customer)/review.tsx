@@ -34,12 +34,12 @@ export default function Review() {
         },
       })
 
-      Alert.alert('Thank You!', 'Apka review submit ho gaya hai.', [
+      Alert.alert('Thank You!', 'Successfully submitted your review.', [
         { text: 'OK', onPress: () => router.replace('/(customer)/(tabs)/bookings') },
       ])
     } catch (err: any) {
       console.log('Error submitting review:', err.message)
-      Alert.alert('Error', err.message || 'Review submit nahi ho saka, dobara try karein')
+      Alert.alert('Error', err.message || 'Failed to submit review, please try again.')
     } finally {
       setLoading(false)
     }
@@ -58,7 +58,7 @@ export default function Review() {
       <View className="flex-1 px-6 mt-6">
         {/* Star Rating */}
         <Text className="text-base font-bold text-gray-900 text-center mb-4">
-          Apka experience kaisa raha?
+          How was your experience?
         </Text>
         <View className="flex-row justify-center mb-2" style={{ gap: 8 }}>
           {[1, 2, 3, 4, 5].map((star) => (
@@ -79,12 +79,12 @@ export default function Review() {
 
         {/* Comment */}
         <Text className="text-base font-bold text-gray-900 mb-2 mt-4">
-          Apna feedback likhein <Text className="text-gray-400 font-normal">(optional)</Text>
+          Write a Review <Text className="text-gray-400 font-normal">(optional)</Text>
         </Text>
         <TextInput
           value={comment}
           onChangeText={setComment}
-          placeholder="Service kaisi rahi, kya achha laga..."
+          placeholder="How was the service? What did you like?"
           placeholderTextColor="#9ca3af"
           multiline
           numberOfLines={5}
