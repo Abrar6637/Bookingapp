@@ -6,7 +6,16 @@ interface LocationState {
   city: string
   area: string
   fullAddress: string
-  setLocation: (city: string, area: string) => void
+
+  latitude: number | null
+  longitude: number | null
+
+  setLocation: (
+    city: string,
+    area: string,
+    latitude?: number | null,
+    longitude?: number | null
+  ) => void
 }
 
 export const useLocationStore = create<LocationState>()(
@@ -15,8 +24,23 @@ export const useLocationStore = create<LocationState>()(
       city: 'Lahore',
       area: 'DHA, Lahore',
       fullAddress: 'DHA, Lahore',
-      setLocation: (city, area) =>
-        set({ city, area, fullAddress: `${area}, ${city}` }),
+
+      latitude: null,
+      longitude: null,
+
+      setLocation: (
+        city,
+        area,
+        latitude = null,
+        longitude = null
+      ) =>
+        set({
+          city,
+          area,
+          fullAddress: `${area}, ${city}`,
+          latitude,
+          longitude,
+        }),
     }),
     {
       name: 'location-storage',

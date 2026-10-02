@@ -11,6 +11,11 @@ export interface Technician {
   experience: string | null
   available: boolean
   address?: string | null
+
+  latitude?: number | null
+  longitude?: number | null
+  distance?: number | null
+
   recent_reviews?: TechnicianReview[]
 }
 

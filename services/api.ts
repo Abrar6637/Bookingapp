@@ -40,7 +40,11 @@ export async function apiFetch(endpoint: string, options: FetchOptions) {
   }
 
  if (!response.ok) {
-  if (__DEV__) console.log('API Error Full Response:', JSON.stringify(data, null, 2))
+  console.log(
+  'API Error Full Response:',
+  response.status,
+  JSON.stringify(data, null, 2)
+)
   throw new Error(data?.error || data?.message || 'Something went wrong')
 }
 
